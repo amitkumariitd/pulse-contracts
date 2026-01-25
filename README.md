@@ -26,6 +26,14 @@ contracts/                                    # Root (git submodule)
 │   ├── common.yaml                         # OpenAPI components (machine-readable)
 │   └── domain/                             # Domain object schemas (future)
 │
+├── guides/                                  # Cross-service implementation guides
+│   ├── tracing.md                          # Distributed tracing standards
+│   ├── context.md                          # Request context propagation
+│   ├── logging.md                          # Structured logging standards
+│   ├── concurrency.md                      # Concurrency safety patterns
+│   ├── config.md                           # Configuration standards
+│   └── testing.md                          # Testing standards
+│
 └── product/                                # Product documentation
     ├── overview.md                         # Product vision and context
     ├── features/                           # Feature specifications
@@ -64,6 +72,19 @@ Common schemas, enums, and error formats used across all services.
 - `schemas/common.md` - Human-readable shared schemas
 - `schemas/common.yaml` - OpenAPI components (machine-readable)
 - `schemas/domain/` - Domain object schemas (Order, Instrument, etc.)
+
+## Implementation Guides
+
+Cross-service implementation standards that apply to all backend and frontend services.
+
+- `guides/tracing.md` - Distributed tracing standards (trace_id, request_id, span hierarchy)
+- `guides/context.md` - Request context propagation across service boundaries
+- `guides/logging.md` - Structured logging format and standards
+- `guides/concurrency.md` - Concurrency safety patterns (idempotency, locking, atomic operations)
+- `guides/config.md` - Configuration management standards
+- `guides/testing.md` - Testing standards and best practices
+
+**Note**: Repo-specific guides (e.g., PostgreSQL setup, IDE configuration) remain in each repo's `doc/guides/`.
 
 ## Product Documentation
 
