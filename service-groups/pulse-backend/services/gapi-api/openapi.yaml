@@ -1,0 +1,142 @@
+openapi: 3.0.3
+info:
+  title: GAPI API
+  description: External-facing gateway API for trading platform
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: http://localhost:8000
+    description: Local development
+  - url: https://api.example.com
+    description: Production
+
+tags:
+  - name: health
+    description: Health check endpoints
+  - name: orders
+    description: Order management endpoints
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: Returns the health status of the service
+      operationId: healthCheck
+      tags:
+        - health
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /api/orders:
+    post:
+      summary: Place an order
+      description: Place an order that supports splitting into multiple slices executed over time
+      operationId: createOrder
+      tags:
+        - orders
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '../../../../schemas/common.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../../../../schemas/common.yaml#/components/parameters/TraceIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - order_unique_key
+                - instrument
+                - side
+                - total_quantity
+                - split_config
+              properties:
+                order_unique_key:
+                  type: string
+                  description: Unique key for order deduplication
+                  example: ouk_abc123xyz
+                instrument:
+                  type: string
+                  description: Trading symbol in format EXCHANGE:SYMBOL
+                  pattern: '^(NSE|BSE):[A-Z0-9]+$'
+                  example: NSE:RELIANCE
+                side:
+                  $ref: '../../../../schemas/common.yaml#/components/schemas/OrderSide'
+                total_quantity:
+                  type: integer
+                  minimum: 1
+                  description: Total number of shares to trade
+                  example: 100
+                split_config:
+                  $ref: '../../../../schemas/common.yaml#/components/schemas/SplitConfig'
+      responses:
+        '202':
+          description: Order accepted for processing
+          headers:
+            X-Request-Id:
+              $ref: '../../../../schemas/common.yaml#/components/headers/X-Request-Id'
+            X-Trace-Id:
+              $ref: '../../../../schemas/common.yaml#/components/headers/X-Trace-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order_id:
+                    type: string
+                    description: Unique identifier for the order
+                    example: ord_abc123
+                  order_unique_key:
+                    type: string
+                    description: Client-provided unique key (echoed from request)
+                    example: ouk_abc123xyz
+        '400':
+          $ref: '../../../../schemas/common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../../../../schemas/common.yaml#/components/responses/Unauthorized'
+        '409':
+          description: Duplicate order unique key with different data
+          headers:
+            X-Request-Id:
+              $ref: '../../../../schemas/common.yaml#/components/headers/X-Request-Id'
+            X-Trace-Id:
+              $ref: '../../../../schemas/common.yaml#/components/headers/X-Trace-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../schemas/common.yaml#/components/schemas/ErrorResponse'
+        '422':
+          description: Business validation failed
+          headers:
+            X-Request-Id:
+              $ref: '../../../../schemas/common.yaml#/components/headers/X-Request-Id'
+            X-Trace-Id:
+              $ref: '../../../../schemas/common.yaml#/components/headers/X-Trace-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../schemas/common.yaml#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '../../../../schemas/common.yaml#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT authentication token
+

@@ -1,0 +1,150 @@
+openapi: 3.0.3
+info:
+  title: Pulse API
+  description: Internal trading order domain API
+  version: 1.0.0
+  contact:
+    name: Internal API Support
+    email: internal@example.com
+
+servers:
+  - url: http://localhost:8001
+    description: Local development
+  - url: http://pulse-api:8001
+    description: Internal service (Kubernetes)
+
+tags:
+  - name: health
+    description: Health check endpoints
+  - name: orders
+    description: Internal order management endpoints
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: Returns the health status of the service
+      operationId: healthCheck
+      tags:
+        - health
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /internal/orders:
+    post:
+      summary: Create order (internal)
+      description: Create a new order in the database. Called by GAPI after validation.
+      operationId: createOrderInternal
+      tags:
+        - orders
+      parameters:
+        - name: X-Request-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Request identifier (propagated from GAPI)
+        - name: X-Trace-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Trace identifier (propagated from GAPI)
+        - $ref: '../../../../schemas/common.yaml#/components/parameters/ParentSpanIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - order_unique_key
+                - instrument
+                - side
+                - total_quantity
+                - split_config
+              properties:
+                order_unique_key:
+                  type: string
+                  description: Unique key for order deduplication
+                  example: ouk_abc123xyz
+                instrument:
+                  type: string
+                  description: Trading symbol (e.g., NSE:RELIANCE)
+                  example: NSE:RELIANCE
+                side:
+                  $ref: '../../../../schemas/common.yaml#/components/schemas/OrderSide'
+                total_quantity:
+                  type: integer
+                  minimum: 1
+                  description: Total shares to trade
+                  example: 100
+                split_config:
+                  $ref: '../../../../schemas/common.yaml#/components/schemas/SplitConfig'
+      responses:
+        '201':
+          description: Order created successfully
+          headers:
+            X-Request-Id:
+              $ref: '../../../../schemas/common.yaml#/components/headers/X-Request-Id'
+            X-Trace-Id:
+              $ref: '../../../../schemas/common.yaml#/components/headers/X-Trace-Id'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order_id:
+                    type: string
+                    description: Unique identifier for the order
+                    example: ord_abc123
+                  order_unique_key:
+                    type: string
+                    description: Client-provided unique key (echoed from request)
+                    example: ouk_abc123xyz
+        '409':
+          description: Duplicate order unique key
+          headers:
+            X-Request-Id:
+              $ref: '../../../../schemas/common.yaml#/components/headers/X-Request-Id'
+            X-Trace-Id:
+              $ref: '../../../../schemas/common.yaml#/components/headers/X-Trace-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../schemas/common.yaml#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: DUPLICATE_ORDER_UNIQUE_KEY
+                  message: Order unique key already exists
+                  details:
+                    order_unique_key: ouk_abc123
+                    existing_order_id: ord_xyz456
+        '500':
+          description: Database error
+          headers:
+            X-Request-Id:
+              $ref: '../../../../schemas/common.yaml#/components/headers/X-Request-Id'
+            X-Trace-Id:
+              $ref: '../../../../schemas/common.yaml#/components/headers/X-Trace-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../schemas/common.yaml#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: DATABASE_ERROR
+                  message: Failed to create order
+                  details: {}
+

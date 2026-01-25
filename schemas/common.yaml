@@ -1,0 +1,163 @@
+openapi: 3.0.3
+info:
+  title: Common Schemas
+  description: Shared schemas, headers, enums, and error formats used across all services
+  version: 1.0.0
+
+components:
+  # Reusable schemas
+  schemas:
+    # Enums
+    OrderSide:
+      type: string
+      enum:
+        - BUY
+        - SELL
+      description: Order side (buy or sell)
+
+    OrderQueueStatus:
+      type: string
+      enum:
+        - PENDING
+        - IN_PROGRESS
+        - DONE
+        - SKIPPED
+      description: Status values for the order splitting lifecycle (parent order only)
+
+    OrderSliceStage:
+      type: string
+      enum:
+        - SCHEDULED
+        - IN_PROGRESS
+        - PROCESSED
+      description: Stages for an individual order slice
+
+    # Domain objects
+    SplitConfig:
+      type: object
+      required:
+        - num_splits
+        - duration_minutes
+      properties:
+        num_splits:
+          type: integer
+          minimum: 2
+          maximum: 100
+          description: Number of child orders to create
+        duration_minutes:
+          type: integer
+          minimum: 1
+          maximum: 1440
+          description: Total duration in minutes (max 24 hours)
+        randomize:
+          type: boolean
+          default: true
+          description: Whether to apply randomization
+
+    # Error response
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+            - details
+          properties:
+            code:
+              type: string
+              description: Error code
+              example: INVALID_REQUEST
+            message:
+              type: string
+              description: Human-readable error message
+              example: Missing required field
+            details:
+              type: object
+              description: Additional error details
+              additionalProperties: true
+
+  # Reusable parameters
+  parameters:
+    RequestIdHeader:
+      name: X-Request-Id
+      in: header
+      required: false
+      schema:
+        type: string
+        format: uuid
+      description: Unique request identifier (auto-generated if not provided)
+
+    TraceIdHeader:
+      name: X-Trace-Id
+      in: header
+      required: false
+      schema:
+        type: string
+        format: uuid
+      description: Distributed trace identifier (auto-generated if not provided)
+
+    ParentSpanIdHeader:
+      name: X-Parent-Span-Id
+      in: header
+      required: false
+      schema:
+        type: string
+        format: uuid
+      description: Parent span identifier for span hierarchy
+
+  # Reusable headers
+  headers:
+    X-Request-Id:
+      description: Request identifier (generated or echoed from request)
+      schema:
+        type: string
+        format: uuid
+
+    X-Trace-Id:
+      description: Trace identifier (generated or echoed from request)
+      schema:
+        type: string
+        format: uuid
+
+  # Reusable responses
+  responses:
+    BadRequest:
+      description: Invalid request
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+        X-Trace-Id:
+          $ref: '#/components/headers/X-Trace-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    Unauthorized:
+      description: Missing or invalid authentication token
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+        X-Trace-Id:
+          $ref: '#/components/headers/X-Trace-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    InternalServerError:
+      description: Internal server error
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+        X-Trace-Id:
+          $ref: '#/components/headers/X-Trace-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
