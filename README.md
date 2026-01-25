@@ -26,13 +26,19 @@ contracts/                                    # Root (git submodule)
 │   ├── common.yaml                         # OpenAPI components (machine-readable)
 │   └── domain/                             # Domain object schemas (future)
 │
-├── guides/                                  # Cross-service implementation guides
-│   ├── tracing.md                          # Distributed tracing standards
-│   ├── context.md                          # Request context propagation
-│   ├── logging.md                          # Structured logging standards
-│   ├── concurrency.md                      # Concurrency safety patterns
-│   ├── config.md                           # Configuration standards
-│   └── testing.md                          # Testing standards
+├── standards/                               # Cross-service implementation standards
+│   ├── tracing/                            # Distributed tracing
+│   │   └── README.md                       # Tracing standards (trace_id, request_id, spans)
+│   ├── context/                            # Request context propagation
+│   │   └── README.md                       # Context propagation across services
+│   ├── logging/                            # Structured logging
+│   │   └── README.md                       # Logging format and standards
+│   ├── concurrency/                        # Concurrency safety
+│   │   └── README.md                       # Idempotency, locking, atomic operations
+│   ├── config/                             # Configuration management
+│   │   └── README.md                       # Configuration standards
+│   └── testing/                            # Testing standards
+│       └── README.md                       # Testing best practices
 │
 └── product/                                # Product documentation
     ├── overview.md                         # Product vision and context
@@ -73,16 +79,18 @@ Common schemas, enums, and error formats used across all services.
 - `schemas/common.yaml` - OpenAPI components (machine-readable)
 - `schemas/domain/` - Domain object schemas (Order, Instrument, etc.)
 
-## Implementation Guides
+## Implementation Standards
 
 Cross-service implementation standards that apply to all backend and frontend services.
 
-- `guides/tracing.md` - Distributed tracing standards (trace_id, request_id, span hierarchy)
-- `guides/context.md` - Request context propagation across service boundaries
-- `guides/logging.md` - Structured logging format and standards
-- `guides/concurrency.md` - Concurrency safety patterns (idempotency, locking, atomic operations)
-- `guides/config.md` - Configuration management standards
-- `guides/testing.md` - Testing standards and best practices
+Each standard has its own folder with a README.md containing the complete specification:
+
+- `standards/tracing/` - Distributed tracing standards (trace_id, request_id, span hierarchy)
+- `standards/context/` - Request context propagation across service boundaries
+- `standards/logging/` - Structured logging format and standards
+- `standards/concurrency/` - Concurrency safety patterns (idempotency, locking, atomic operations)
+- `standards/config/` - Configuration management standards
+- `standards/testing/` - Testing standards and best practices
 
 **Note**: Repo-specific guides (e.g., PostgreSQL setup, IDE configuration) remain in each repo's `doc/guides/`.
 
