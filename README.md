@@ -62,7 +62,7 @@ contracts/                                    # Root (git submodule)
 
 ### pulse-backend
 
-Current repository containing trading domain services.
+Backend repository containing trading domain services.
 
 **Services:**
 - `gapi-api` - External-facing gateway API (FastAPI, port 8000)
@@ -70,6 +70,15 @@ Current repository containing trading domain services.
 - `pulse-background` - Background workers for async processing (no HTTP)
 
 See: [service-groups/pulse-backend/overview.md](service-groups/pulse-backend/overview.md)
+
+### pulse-frontend
+
+Frontend repository containing web application.
+
+**Services:**
+- `pulse-web` - Trading platform web UI (React SPA, port 5173)
+
+See: [service-groups/pulse-frontend/overview.md](service-groups/pulse-frontend/overview.md)
 
 ## Shared Schemas
 
