@@ -1,26 +1,28 @@
-# Analytics Standard
+# UI Events Standard
 
-**Domain**: Analytics Tracking  
-**Purpose**: Provider-agnostic analytics interface for tracking user behavior
+**Domain**: UI Event Tracking
+**Purpose**: Provider-agnostic interface for tracking user interactions and UI events
 
 ---
 
 ## Overview
 
-This standard defines a **provider-agnostic analytics interface** that:
-- Tracks user behavior and interactions
-- Correlates analytics events with distributed tracing
-- Supports multiple analytics providers (Google Analytics, PostHog, custom backend)
+This standard defines a **provider-agnostic UI event tracking interface** that:
+- Tracks user interactions and UI events (button clicks, form submissions, page views)
+- Correlates UI events with distributed tracing
+- Supports multiple providers (Google Analytics, PostHog, custom backend)
 - Automatically includes tracing context in all events
+
+**Note:** This is for **technical UI event tracking**, not product/business analytics.
 
 ---
 
-## Analytics Service Interface
+## UI Event Service Interface
 
-All analytics providers MUST implement this interface:
+All UI event tracking providers MUST implement this interface:
 
 ```typescript
-interface IAnalyticsService {
+interface IUIEventService {
   /**
    * Initialize the analytics service
    */
@@ -58,10 +60,10 @@ interface IAnalyticsService {
 
 ## Event Structure
 
-### AnalyticsEvent
+### UIEvent
 
 ```typescript
-interface AnalyticsEvent {
+interface UIEvent {
   /** Event name (e.g., 'order_placed', 'button_clicked') */
   event: string;
   
@@ -94,7 +96,7 @@ interface UserProperties {
 
 ## Integration with Tracing
 
-All analytics events MUST automatically include tracing context:
+All UI events MUST automatically include tracing context:
 
 ```typescript
 {
@@ -116,8 +118,8 @@ All analytics events MUST automatically include tracing context:
 ```
 
 **Benefits:**
-- Link analytics events to API calls via `trace_id`
-- Correlate user actions with backend logs
+- Link UI events to API calls via `trace_id`
+- Correlate user interactions with backend logs
 - Debug issues by following trace from UI → API → DB
 
 **Reference:** `contracts/standards/tracing/README.md`
